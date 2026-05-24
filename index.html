@@ -1063,6 +1063,73 @@ details.reveal .answer {
   .bug-level-btn { font-size: 0.68rem; padding: 7px 8px; }
 }
 
+/* ============ TIMELINE (test strategy 4.2.4) ============ */
+.timeline-wrap {
+  margin: 24px 0;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.timeline-header {
+  background: rgba(255, 213, 74, 0.08);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 18px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.timeline { padding: 8px 0; }
+.timeline-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 18px;
+  padding: 14px 20px;
+  border-bottom: 1px dashed var(--line);
+  align-items: start;
+}
+.timeline-row:last-child { border-bottom: none; }
+.timeline-time {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  padding-top: 2px;
+}
+.timeline-time::after {
+  content: ' min';
+  font-size: 0.7em;
+  color: var(--ink-faint);
+  font-weight: 400;
+}
+.timeline-task {
+  line-height: 1.65;
+  font-size: 0.94rem;
+  color: var(--ink);
+}
+.timeline-task strong { color: var(--accent); font-weight: 600; }
+
+@media (max-width: 580px) {
+  .timeline-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 14px 16px;
+  }
+  .timeline-time {
+    font-size: 0.75rem;
+    color: var(--accent);
+    border-bottom: 1px solid rgba(255,213,74,0.2);
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+  }
+  .timeline-task { font-size: 0.88rem; }
+}
+
 /* ============ MINI GAMES ============ */
 .game-box {
   background: var(--bg-card);
@@ -4979,16 +5046,48 @@ HAVING AVG(salary) &gt; 60000</pre>
 
     <p>เผื่อเวลาแต่ละข้อตามความยาก:</p>
 
-    <div class="code-wrap code">
-      <div class="code-header"><span>timeline · 120 minutes</span></div>
-<pre>นาที   0 – 8     │ อ่านทุกข้อ · เช็ค Q3 ว่าได้ PySpark หรือ RDD
-                  │ ระบุข้อที่ใจดี/ใจร้าย
-นาที   8 – 35    │ Q3 (Spark/PySpark) ── AI ช่วยเยอะ
-                  │ จบเร็ว = เปิดทาง trick 4.2.3
-นาที  35 – 55    │ Q4 (Python Basic) ── AI guard เข้ม แต่ basic ทำเองได้
-นาที  55 – 80    │ Q1 (SQL Intermediate) ── ใช้ Q3 notebook ทดสอบถ้ามี
-นาที  80 – 110   │ Q2 (SQL Hard) ── ใช้เวลาคิดเยอะ · ทดสอบหลายรอบ
-นาที 110 – 120   │ Review · เช็ค edge case · submit</pre>
+    <div class="timeline-wrap">
+      <div class="timeline-header">⏱ Timeline · 120 minutes</div>
+      <div class="timeline">
+        <div class="timeline-row">
+          <div class="timeline-time">0 – 8</div>
+          <div class="timeline-task">
+            <strong>อ่านทุกข้อ</strong> · เช็ค Q3 ว่าได้ PySpark หรือ RDD<br>
+            ระบุข้อที่ใจดี / ใจร้าย
+          </div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-time">8 – 35</div>
+          <div class="timeline-task">
+            <strong>Q3 (Spark / PySpark)</strong> — AI ช่วยเยอะ<br>
+            จบเร็ว = เปิดทาง trick 4.2.3
+          </div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-time">35 – 55</div>
+          <div class="timeline-task">
+            <strong>Q4 (Python Basic)</strong> — AI guard เข้ม แต่ basic ทำเองได้
+          </div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-time">55 – 80</div>
+          <div class="timeline-task">
+            <strong>Q1 (SQL Intermediate)</strong> — ใช้ Q3 notebook ทดสอบถ้ามี
+          </div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-time">80 – 110</div>
+          <div class="timeline-task">
+            <strong>Q2 (SQL Hard)</strong> — ใช้เวลาคิดเยอะ · ทดสอบหลายรอบ
+          </div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-time">110 – 120</div>
+          <div class="timeline-task">
+            <strong>Review</strong> · เช็ค edge case · submit
+          </div>
+        </div>
+      </div>
     </div>
 
     <h3>เผื่อเวลายืดหยุ่น</h3>
@@ -5467,7 +5566,7 @@ output = [2]</pre>
   </div>
 
   <div class="end">— END OF CODEX —</div>
-  <div class="sig">นั่งติ นั่งบ่น และ ชี้นิ้วสั่งงานโดย : kritkaew</div>
+  <div class="sig">นั่งติ นั่งบ่น และชี้นิ้วสั่งงานโดย : kritkaew</div>
   <div class="agent">ทำงานเยี่ยงทาสโดย : Pedagog Prime Agent (Opus 4.7)</div>
   <div class="disc">
     เอกสารนี้สังเคราะห์จาก HackerRank documentation, October 2025 Release Notes,
