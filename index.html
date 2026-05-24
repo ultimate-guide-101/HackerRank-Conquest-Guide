@@ -1666,17 +1666,17 @@ a { color: var(--accent); }
       <div class="predict-head">Predict First</div>
       <div class="predict-body">
         <div class="predict-q">
-          อยู่ใน "ข้อสอบทำเอง" แล้วต้องการให้ AI ช่วยเขียน function — วิธีไหนใช้ได้?<br>
-          (A) พิมพ์ใน editor แล้วรอให้ AI เติมต่อให้<br>
-          (B) ถามใน chat ข้างๆ ว่า "How do I write factorial?"
+          ต้องการให้ AI Guarded mode ช่วยเขียน function — วิธีไหนใช้ได้?<br>
+          (A) ถาม AI ว่าโจทย์ข้อนี้ทำยังไงไปตรงๆ แล้วรอให้ AI ตอบ<br>
+          (B) ถาม AI ว่า "How do I write code based on [idea]?"
         </div>
         <details class="reveal">
           <summary></summary>
           <div class="answer">
             ตอบ <strong>(B)</strong><br><br>
-            "ข้อสอบทำเอง" อยู่ใน Guarded mode<br>
-            → AI ไม่ autocomplete ใน editor<br>
-            → คุยผ่าน chat ได้เท่านั้น
+            AI ที่อยู่ใน Guarded mode<br>
+            → AI จะไม่ตอบคำถามเกี่ยวกับโจทย์โดยตรง<br>
+            → AI จะเน้นให้คำแนะนำ หรือ เจาะจงตอบเฉพาะเรื่อง Syntax
           </div>
         </details>
       </div>
