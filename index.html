@@ -43,7 +43,11 @@
   --code-bg: #1e1e22;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+  /* DO NOT use overflow-x:hidden here — it breaks position:sticky on .topbar */
+}
 body {
   background: var(--bg); color: var(--ink);
   font-family: "Manrope", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI", "IBM Plex Sans Thai Looped", "IBM Plex Sans Thai", "Sukhumvit Set", "Noto Sans Thai", Tahoma, sans-serif;
@@ -55,6 +59,14 @@ body {
   transition: background 0.25s, color 0.25s;
   min-height: 100vh;
   position: relative;
+  /* overflow-clip = block horizontal overflow WITHOUT breaking sticky inside */
+  overflow-x: clip;
+}
+/* Prevent any child from extending past viewport */
+@media (max-width: 1024px) {
+  pre, code { word-wrap: break-word; }
+  pre { white-space: pre-wrap; word-break: break-word; }
+  img, table, .code-wrap, .chat-mock { max-width: 100%; }
 }
 
 /* Fantasy ambient background — subtle, doesn't distract */
@@ -210,7 +222,8 @@ body::before {
   background: rgba(255,213,74,0.06);
 }
 .toc-item.lvl-2 { padding-left: 22px; font-size: 0.78rem; }
-.main { min-width: 0; }
+.main { min-width: 0; max-width: 100%; }
+.main > * { max-width: 100%; }
 /* ============ HERO ============ */
 .hero {
   padding: 56px 0 40px;
@@ -571,15 +584,8 @@ details.reveal .answer {
 @media (max-width: 640px) {
   .diary { padding: 22px 18px; font-size: 0.92rem; }
 }
-/* Margin rule line — subtle handwritten feel */
-.diary::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 26px;
-  width: 1px; height: 100%;
-  background: var(--accent);
-  opacity: 0.12;
-}
+/* Margin rule line — removed for mobile readability */
+.diary::before { display: none; }
 .diary p { margin: 0 0 16px; }
 .diary strong { color: var(--accent); font-weight: 600; }
 .diary em { color: var(--accent-2); font-style: italic; }
@@ -743,100 +749,173 @@ details.reveal .answer {
   font-size: 0.88em;
 }
 
-/* ============ LUCKY DICE (footer easter egg · 3D cube) ============ */
+/* ============ LUCKY DICE (fantasy crystal · footer easter egg) ============ */
 .lucky-dice-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
-  margin: 56px auto 32px;
+  gap: 14px;
+  margin: 64px auto 36px;
   position: relative;
-  min-height: 160px;
-  perspective: 600px;
+  min-height: 180px;
+  perspective: 700px;
   perspective-origin: 50% 50%;
 }
-.lucky-dice-hint {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.18em;
-  color: var(--ink-faint);
-  text-transform: uppercase;
-  opacity: 0.5;
-  transition: opacity 0.3s, color 0.3s;
-}
-.lucky-dice-wrap:hover .lucky-dice-hint { opacity: 1; color: var(--accent); }
 
-/* 3D cube container — default isometric pose */
+/* Aura glow under the dice */
+.lucky-dice-wrap::before {
+  content: '';
+  position: absolute;
+  bottom: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 24px;
+  background: radial-gradient(ellipse, rgba(99, 102, 241, 0.35) 0%, transparent 70%);
+  filter: blur(10px);
+  pointer-events: none;
+  animation: auraPulse 3s ease-in-out infinite;
+  z-index: 0;
+}
+@keyframes auraPulse {
+  0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+  50%      { opacity: 1; transform: translateX(-50%) scale(1.15); }
+}
+
+.lucky-dice-hint {
+  font-family: "Cinzel", "JetBrains Mono", monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  text-transform: uppercase;
+  opacity: 0.6;
+  transition: opacity 0.3s, letter-spacing 0.3s;
+  text-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+}
+.lucky-dice-wrap:hover .lucky-dice-hint {
+  opacity: 1;
+  letter-spacing: 0.28em;
+}
+
+/* 3D cube container — generous click area */
 .lucky-dice {
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   position: relative;
   transform-style: preserve-3d;
   cursor: pointer;
-  transform: rotateX(-28deg) rotateY(-32deg);
-  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  margin: 20px 0;
+  transform: rotateX(-26deg) rotateY(-34deg);
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  margin: 24px 0;
+  z-index: 1;
+  /* Click area larger than visual on mobile */
+  padding: 18px;
+  box-sizing: content-box;
 }
 .lucky-dice:hover {
-  transform: rotateX(-28deg) rotateY(-32deg) scale(1.08);
+  transform: rotateX(-26deg) rotateY(-34deg) scale(1.1) translateY(-4px);
+}
+.lucky-dice:active {
+  transform: rotateX(-26deg) rotateY(-34deg) scale(0.95);
 }
 .lucky-dice.rolling {
-  animation: cubeRoll 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: crystalRoll 1.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-@keyframes cubeRoll {
-  0%   { transform: rotateX(-28deg) rotateY(-32deg); }
-  25%  { transform: rotateX(180deg) rotateY(90deg); }
-  50%  { transform: rotateX(360deg) rotateY(270deg); }
-  75%  { transform: rotateX(540deg) rotateY(450deg); }
-  100% { transform: rotateX(-28deg) rotateY(-32deg) rotateY(720deg); }
+@keyframes crystalRoll {
+  0%   { transform: rotateX(-26deg) rotateY(-34deg) scale(1); }
+  15%  { transform: rotateX(140deg) rotateY(80deg) scale(1.15) translateY(-12px); }
+  35%  { transform: rotateX(320deg) rotateY(240deg) scale(1.2) translateY(-18px); }
+  55%  { transform: rotateX(540deg) rotateY(380deg) scale(1.15) translateY(-12px); }
+  75%  { transform: rotateX(700deg) rotateY(560deg) scale(1.05) translateY(-4px); }
+  100% { transform: rotateX(-26deg) rotateY(-34deg) rotateY(720deg) scale(1); }
 }
 
-/* The 6 faces */
+/* The 6 crystal faces */
 .dice-face-cube {
   position: absolute;
-  width: 64px;
-  height: 64px;
-  background: linear-gradient(135deg,
-    rgba(255, 213, 74, 0.98) 0%,
-    rgba(255, 158, 89, 0.92) 100%);
-  border: 1.5px solid rgba(180, 130, 30, 0.6);
-  border-radius: 8px;
+  top: 18px; left: 18px;  /* offset for padding click area */
+  width: 72px;
+  height: 72px;
+  background:
+    radial-gradient(circle at 30% 30%,
+      rgba(165, 215, 255, 0.55) 0%,
+      rgba(56, 92, 200, 0.85) 40%,
+      rgba(20, 35, 100, 0.95) 100%);
+  border: 1px solid rgba(165, 215, 255, 0.5);
+  border-radius: 6px;
   display: grid;
   place-items: center;
   font-family: "Cinzel", "JetBrains Mono", monospace;
-  font-size: 1.7rem;
+  font-size: 1.85rem;
   font-weight: 700;
-  color: #1a1814;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  color: #e8a87c;  /* copper / rose-gold */
+  text-shadow:
+    0 0 4px rgba(232, 168, 124, 0.6),
+    0 1px 2px rgba(0,0,0,0.5),
+    inset 0 0 2px rgba(255,255,255,0.3);
   font-feature-settings: "liga" 0, "calt" 0;
   font-variant-ligatures: none;
   backface-visibility: hidden;
   box-shadow:
-    inset 0 2px 8px rgba(255,255,255,0.5),
-    inset 0 -3px 8px rgba(120,60,0,0.25);
+    inset 0 2px 12px rgba(165, 215, 255, 0.4),
+    inset 0 -6px 16px rgba(10, 20, 70, 0.6),
+    inset 4px 0 8px rgba(99, 102, 241, 0.25);
+  overflow: hidden;
 }
+/* Crystal shimmer inside each face */
+.dice-face-cube::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(115deg,
+      transparent 30%,
+      rgba(165, 215, 255, 0.25) 45%,
+      rgba(99, 220, 200, 0.18) 55%,
+      transparent 70%);
+  pointer-events: none;
+  animation: shimmerCrystal 4s ease-in-out infinite;
+}
+@keyframes shimmerCrystal {
+  0%, 100% { transform: translateX(-30%); opacity: 0.6; }
+  50%      { transform: translateX(30%); opacity: 1; }
+}
+/* Inner sparkle dot */
+.dice-face-cube::after {
+  content: '';
+  position: absolute;
+  top: 18%; left: 22%;
+  width: 6px; height: 6px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  filter: blur(1px);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
 [data-theme="light"] .dice-face-cube {
-  background: linear-gradient(135deg,
-    rgba(217, 119, 6, 0.98) 0%,
-    rgba(194, 65, 12, 0.92) 100%);
-  color: #fef3c7;
-  border-color: rgba(120, 53, 15, 0.7);
+  background:
+    radial-gradient(circle at 30% 30%,
+      rgba(199, 230, 255, 0.7) 0%,
+      rgba(79, 110, 200, 0.85) 40%,
+      rgba(40, 60, 130, 0.95) 100%);
+  color: #d97757;
 }
 
-/* Position each face in 3D space — 64/2 = 32px */
-.dice-face-cube.face-front  { transform: translateZ(32px); }
-.dice-face-cube.face-back   { transform: rotateY(180deg) translateZ(32px); }
-.dice-face-cube.face-right  { transform: rotateY(90deg) translateZ(32px); }
-.dice-face-cube.face-left   { transform: rotateY(-90deg) translateZ(32px); }
-.dice-face-cube.face-top    { transform: rotateX(90deg) translateZ(32px); }
-.dice-face-cube.face-bottom { transform: rotateX(-90deg) translateZ(32px); }
+/* Position each face in 3D space — 72/2 = 36px */
+.dice-face-cube.face-front  { transform: translateZ(36px); }
+.dice-face-cube.face-back   { transform: rotateY(180deg) translateZ(36px); }
+.dice-face-cube.face-right  { transform: rotateY(90deg) translateZ(36px); }
+.dice-face-cube.face-left   { transform: rotateY(-90deg) translateZ(36px); }
+.dice-face-cube.face-top    { transform: rotateX(90deg) translateZ(36px); }
+.dice-face-cube.face-bottom { transform: rotateX(-90deg) translateZ(36px); }
 
-/* Shading per face — adds 3D depth feel */
-.dice-face-cube.face-top    { filter: brightness(1.15); }
-.dice-face-cube.face-right  { filter: brightness(0.78); }
-.dice-face-cube.face-left   { filter: brightness(0.88); }
-.dice-face-cube.face-back   { filter: brightness(0.65); }
-.dice-face-cube.face-bottom { filter: brightness(0.55); }
+/* Shading per face for depth */
+.dice-face-cube.face-top    { filter: brightness(1.2); }
+.dice-face-cube.face-right  { filter: brightness(0.7); }
+.dice-face-cube.face-left   { filter: brightness(0.85); }
+.dice-face-cube.face-back   { filter: brightness(0.55); }
+.dice-face-cube.face-bottom { filter: brightness(0.45); }
 
 /* Hide old single .dice-face */
 .dice-face { display: none; }
@@ -891,19 +970,52 @@ details.reveal .answer {
 .bug-arena {
   background: var(--bg-card);
   border: 2px solid var(--accent);
-  border-radius: 10px;
-  padding: 14px;
-  margin: 20px auto;
+  border-radius: 12px;
+  padding: 18px;
+  margin: 24px auto;
   position: relative;
   user-select: none;
-  max-width: 340px;
+  max-width: 480px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.bug-level-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.bug-level-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  border-radius: 6px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.bug-level-btn:hover { border-color: var(--accent); }
+.bug-level-btn.active {
+  background: rgba(255, 213, 74, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 700;
 }
 .bug-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
   gap: 6px;
   margin-top: 10px;
 }
+.bug-grid.level-easy   { grid-template-columns: repeat(4, 1fr); }
+.bug-grid.level-medium { grid-template-columns: repeat(5, 1fr); }
+.bug-grid.level-hard   { grid-template-columns: repeat(6, 1fr); }
+
 .bug-cell {
   aspect-ratio: 1;
   background: var(--bg);
@@ -911,28 +1023,45 @@ details.reveal .answer {
   border-radius: 6px;
   display: grid;
   place-items: center;
-  font-size: 1.15rem;
+  font-size: 1.4rem;
   cursor: pointer;
-  transition: all 0.1s;
+  transition: all 0.15s;
   position: relative;
+  min-height: 38px;
 }
+.bug-grid.level-medium .bug-cell { font-size: 1.15rem; }
+.bug-grid.level-hard .bug-cell   { font-size: 0.95rem; }
 .bug-cell:hover { border-color: var(--accent); }
-.bug-cell.bug { background: rgba(248, 113, 113, 0.15); animation: bugPop 0.2s; }
-.bug-cell.gem { background: rgba(74, 222, 128, 0.12); animation: bugPop 0.2s; }
-.bug-cell.hit { background: rgba(255, 213, 74, 0.25); }
+.bug-cell.bug { background: rgba(248, 113, 113, 0.15); animation: bugPop 0.25s; }
+.bug-cell.gem { background: rgba(74, 222, 128, 0.12); animation: bugPop 0.25s; }
+.bug-cell.coffee { background: rgba(180, 130, 30, 0.15); animation: bugPop 0.25s; }
+.bug-cell.hit { background: rgba(255, 213, 74, 0.3); }
 @keyframes bugPop {
-  from { transform: scale(0.5); opacity: 0.3; }
-  to { transform: scale(1); opacity: 1; }
+  from { transform: scale(0.4); opacity: 0.2; }
+  to   { transform: scale(1); opacity: 1; }
 }
 .bug-status {
   display: flex;
   justify-content: space-between;
   font-family: "JetBrains Mono", monospace;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   color: var(--accent);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
-.bug-status .label { color: var(--ink-dim); font-size: 0.65rem; }
+.bug-status > div { flex: 1; min-width: 80px; }
+.bug-status .label { color: var(--ink-dim); font-size: 0.68rem; display: block; }
+
+@media (max-width: 480px) {
+  .bug-arena { padding: 14px; }
+  .bug-cell { font-size: 1.15rem; min-height: 32px; }
+  .bug-grid.level-medium .bug-cell { font-size: 1rem; }
+  .bug-grid.level-hard .bug-cell   { font-size: 0.82rem; }
+  .bug-status { font-size: 0.72rem; }
+  .bug-status .label { font-size: 0.62rem; }
+  .bug-level-btn { font-size: 0.68rem; padding: 7px 8px; }
+}
 
 /* ============ MINI GAMES ============ */
 .game-box {
@@ -1275,6 +1404,8 @@ details.reveal .answer {
 }
 .tag.pro { background: var(--accent); color: #000; }
 .tag.easy { background: var(--good); color: #000; }
+.tag.inter { background: var(--warn); color: #000; }
+.tag.hard { background: var(--bad); color: #fff; }
 .tag.lang { background: var(--line-strong); color: var(--ink); }
 .problem-body { padding: 16px 20px; }
 .problem-statement {
@@ -5235,17 +5366,22 @@ output = [2]</pre>
     <p>คลายเครียดก่อนจากกัน · ตี 🐛 ให้ได้คะแนน · เก็บ 💎 ได้ boost · เลี่ยง ☕ (เสีย combo)</p>
 
     <div class="bug-arena" id="bug-arena">
+      <div class="bug-level-row">
+        <button class="bug-level-btn active" data-level="easy"   type="button">Easy · 4×4</button>
+        <button class="bug-level-btn"        data-level="medium" type="button">Medium · 5×5</button>
+        <button class="bug-level-btn"        data-level="hard"   type="button">Hard · 6×6</button>
+      </div>
       <div class="bug-status">
         <div><span class="label">SCORE</span> <span id="bug-score">0</span></div>
         <div><span class="label">COMBO</span> <span id="bug-combo">×1</span></div>
         <div><span class="label">TIME</span> <span id="bug-time">30</span>s</div>
       </div>
-      <div class="bug-grid" id="bug-grid"></div>
+      <div class="bug-grid level-easy" id="bug-grid"></div>
       <div class="game-controls" style="margin-top: 14px;">
         <button class="game-btn" id="bug-start" type="button">Start</button>
         <button class="game-btn game-btn-ghost" id="bug-reset" type="button">Reset</button>
       </div>
-      <div class="game-feedback" id="bug-feedback">กด Start เพื่อเริ่มเกม</div>
+      <div class="game-feedback" id="bug-feedback">เลือกระดับแล้วกด Start</div>
     </div>
   </div>
 </section>
@@ -5331,7 +5467,7 @@ output = [2]</pre>
   </div>
 
   <div class="end">— END OF CODEX —</div>
-  <div class="sig">นั่งติ นั่งบ่น และ ชี้นิ้วสั่งงานโดย : kritkaew</div>
+  <div class="sig">นั่งติ นั่งบ่น และชี้นิ้วสั่งงานโดย : kritkaew</div>
   <div class="agent">ทำงานเยี่ยงทาสโดย : Pedagog Prime Agent (Opus 4.7)</div>
   <div class="disc">
     เอกสารนี้สังเคราะห์จาก HackerRank documentation, October 2025 Release Notes,
@@ -5346,6 +5482,17 @@ output = [2]</pre>
 <script>
 (function() {
   'use strict';
+
+  // ============ Friendly Console Warning ============
+  try {
+    var style1 = 'color:#ffd54a;font-family:"Cinzel",serif;font-size:22px;font-weight:700;letter-spacing:0.08em;text-shadow:0 0 8px rgba(255,213,74,0.4);';
+    var style2 = 'color:#a87c4f;font-family:"Manrope",sans-serif;font-size:13px;line-height:1.6;';
+    var style3 = 'color:#6366f1;font-family:"JetBrains Mono",monospace;font-size:11px;';
+    console.log('%c⚔ The Ultimate Guide ⚔', style1);
+    console.log('%cเอกสารนี้แชร์ให้อ่านส่วนตัว · กรุณาอย่า copy หรือ redistribute โดยไม่ได้รับอนุญาต ✦\nIf you found a bug or have feedback, ping kritkaew ', style2);
+    console.log('%cBuilt by: kritkaew × Pedagog Prime Agent (Opus 4.7) · V1 · 2026', style3);
+  } catch (_) {}
+
   try {
     // ============ Mobile TOC ============
     var mobileTocBtn = document.getElementById('mobileTocBtn');
@@ -5821,14 +5968,28 @@ output = [2]</pre>
       luckyDice.addEventListener('mousedown', startHold);
       luckyDice.addEventListener('mouseup', endHold);
       luckyDice.addEventListener('mouseleave', endHold);
-      luckyDice.addEventListener('touchstart', startHold, { passive: false });
-      luckyDice.addEventListener('touchend', endHold);
+
+      // Mobile touch — roll on quick tap, hold for tooltip
+      var touchStartTime = 0;
+      luckyDice.addEventListener('touchstart', function(e) {
+        touchStartTime = Date.now();
+        startHold(e);
+      }, { passive: false });
+      luckyDice.addEventListener('touchend', function(e) {
+        var duration = Date.now() - touchStartTime;
+        endHold();
+        // Quick tap (< 300ms) = roll · prevent ghost click
+        if (duration < 300 && !rolling && !holding) {
+          e.preventDefault();
+          rollDice();
+        }
+      });
 
       // Initial randomization
       currentResult = randomizeFaces();
     }
 
-    // ============ GAME 3: Bug Smasher ============
+    // ============ GAME 3: Bug Smasher (3 levels) ============
     var bugArena = document.getElementById('bug-arena');
     if (bugArena) {
       var bugGrid = document.getElementById('bug-grid');
@@ -5838,52 +5999,77 @@ output = [2]</pre>
       var bugFb = document.getElementById('bug-feedback');
       var bugStart = document.getElementById('bug-start');
       var bugReset = document.getElementById('bug-reset');
+      var bugLevelBtns = document.querySelectorAll('.bug-level-btn');
 
-      var CELLS = 16;
+      var levelConfig = {
+        easy:   { cells: 16, grid: 4, time: 30, spawn: 700,  bugRate: 0.70, gemRate: 0.90 },
+        medium: { cells: 25, grid: 5, time: 45, spawn: 550,  bugRate: 0.65, gemRate: 0.88 },
+        hard:   { cells: 36, grid: 6, time: 60, spawn: 420,  bugRate: 0.60, gemRate: 0.85 }
+      };
+
       var bugState = {
+        level: 'easy',
         score: 0, combo: 1, time: 30,
         running: false, spawnInt: null, tickInt: null,
         cells: []
       };
 
-      for (var bi = 0; bi < CELLS; bi++) {
-        (function(idx) {
-          var c = document.createElement('div');
-          c.className = 'bug-cell';
-          c.dataset.idx = idx;
-          c.addEventListener('click', function() {
-            if (!bugState.running) return;
-            if (c.classList.contains('bug')) {
-              bugState.score += 10 * bugState.combo;
-              bugState.combo = Math.min(bugState.combo + 1, 5);
-              c.textContent = '💥';
-              c.classList.remove('bug'); c.classList.add('hit');
-              bugFb.textContent = '+' + (10 * bugState.combo) + ' (combo ×' + bugState.combo + ')';
-              bugFb.className = 'game-feedback win';
-            } else if (c.classList.contains('gem')) {
-              bugState.score += 50;
-              bugState.time = Math.min(bugState.time + 3, 60);
-              c.textContent = '✨';
-              c.classList.remove('gem'); c.classList.add('hit');
-              bugFb.textContent = '+50 +3s';
-              bugFb.className = 'game-feedback win';
-            } else if (c.textContent === '☕') {
-              bugState.combo = 1;
-              bugState.score = Math.max(0, bugState.score - 20);
-              bugFb.textContent = '−20 combo reset';
-              bugFb.className = 'game-feedback lose';
-              c.textContent = '';
-            }
-            updateBugUI();
-          });
-          bugGrid.appendChild(c);
-          bugState.cells.push(c);
-        })(bi);
+      function buildGrid(level) {
+        var cfg = levelConfig[level];
+        bugGrid.innerHTML = '';
+        bugGrid.className = 'bug-grid level-' + level;
+        bugState.cells = [];
+        for (var i = 0; i < cfg.cells; i++) {
+          (function(idx) {
+            var c = document.createElement('div');
+            c.className = 'bug-cell';
+            c.dataset.idx = idx;
+            c.addEventListener('click', function() {
+              if (!bugState.running) return;
+              if (c.classList.contains('bug')) {
+                bugState.score += 10 * bugState.combo;
+                bugState.combo = Math.min(bugState.combo + 1, 5);
+                c.textContent = '💥';
+                c.classList.remove('bug'); c.classList.add('hit');
+                bugFb.textContent = '+' + (10 * bugState.combo) + ' (combo ×' + bugState.combo + ')';
+                bugFb.className = 'game-feedback win';
+              } else if (c.classList.contains('gem')) {
+                bugState.score += 50;
+                bugState.time = Math.min(bugState.time + 3, 90);
+                c.textContent = '✨';
+                c.classList.remove('gem'); c.classList.add('hit');
+                bugFb.textContent = '+50 ✦ +3s';
+                bugFb.className = 'game-feedback win';
+              } else if (c.classList.contains('coffee')) {
+                bugState.combo = 1;
+                bugState.score = Math.max(0, bugState.score - 20);
+                bugFb.textContent = '☕ −20 · combo reset';
+                bugFb.className = 'game-feedback lose';
+                c.textContent = '';
+                c.classList.remove('coffee');
+              }
+              updateBugUI();
+            });
+            bugGrid.appendChild(c);
+            bugState.cells.push(c);
+          })(i);
+        }
+      }
+
+      function setLevel(level) {
+        if (bugState.running) return;
+        bugState.level = level;
+        bugState.time = levelConfig[level].time;
+        for (var i = 0; i < bugLevelBtns.length; i++) {
+          bugLevelBtns[i].classList.toggle('active', bugLevelBtns[i].dataset.level === level);
+        }
+        buildGrid(level);
+        updateBugUI();
       }
 
       function clearCell(c) {
         c.textContent = '';
-        c.classList.remove('bug', 'gem', 'hit');
+        c.classList.remove('bug', 'gem', 'hit', 'coffee');
       }
       function clearAll() {
         for (var i = 0; i < bugState.cells.length; i++) clearCell(bugState.cells[i]);
@@ -5896,6 +6082,7 @@ output = [2]</pre>
 
       function spawn() {
         if (!bugState.running) return;
+        var cfg = levelConfig[bugState.level];
         var empty = [];
         for (var i = 0; i < bugState.cells.length; i++) {
           if (!bugState.cells[i].textContent) empty.push(bugState.cells[i]);
@@ -5903,31 +6090,33 @@ output = [2]</pre>
         if (empty.length === 0) return;
         var c = empty[Math.floor(Math.random() * empty.length)];
         var r = Math.random();
-        if (r < 0.7) {
+        if (r < cfg.bugRate) {
           c.textContent = '🐛'; c.classList.add('bug');
-        } else if (r < 0.9) {
-          c.textContent = '☕';
+        } else if (r < cfg.gemRate) {
+          c.textContent = '☕'; c.classList.add('coffee');
         } else {
           c.textContent = '💎'; c.classList.add('gem');
         }
         setTimeout(function() {
-          if (c.textContent === '🐛' || c.textContent === '☕' || c.textContent === '💎') {
+          if (c.textContent && c.textContent !== '💥' && c.textContent !== '✨') {
             clearCell(c);
             updateBugUI();
           }
-        }, 1400);
+        }, bugState.level === 'hard' ? 1100 : 1400);
       }
 
       function startGame() {
         if (bugState.running) return;
-        bugState.score = 0; bugState.combo = 1; bugState.time = 30;
+        var cfg = levelConfig[bugState.level];
+        bugState.score = 0; bugState.combo = 1; bugState.time = cfg.time;
         bugState.running = true;
         clearAll();
         updateBugUI();
         bugFb.textContent = 'Go!';
         bugFb.className = 'game-feedback win';
         bugStart.disabled = true;
-        bugState.spawnInt = setInterval(spawn, 600);
+        for (var i = 0; i < bugLevelBtns.length; i++) bugLevelBtns[i].disabled = true;
+        bugState.spawnInt = setInterval(spawn, cfg.spawn);
         bugState.tickInt = setInterval(function() {
           bugState.time--;
           if (bugState.time <= 0) endGame();
@@ -5940,10 +6129,12 @@ output = [2]</pre>
         clearInterval(bugState.spawnInt);
         clearInterval(bugState.tickInt);
         bugStart.disabled = false;
+        for (var i = 0; i < bugLevelBtns.length; i++) bugLevelBtns[i].disabled = false;
         clearAll();
-        var msg = 'Score: ' + bugState.score;
-        if (bugState.score >= 500) msg += ' 🏆 Master!';
-        else if (bugState.score >= 250) msg += ' ✨ Nice!';
+        var msg = '🏁 Score: ' + bugState.score;
+        var threshold = bugState.level === 'easy' ? 300 : (bugState.level === 'medium' ? 500 : 800);
+        if (bugState.score >= threshold * 2) msg += ' · 🏆 Master!';
+        else if (bugState.score >= threshold) msg += ' · ✨ Nice!';
         else msg += ' · ลองอีกครั้ง';
         bugFb.textContent = msg;
         bugFb.className = 'game-feedback';
@@ -5953,16 +6144,31 @@ output = [2]</pre>
         bugState.running = false;
         clearInterval(bugState.spawnInt);
         clearInterval(bugState.tickInt);
-        bugState.score = 0; bugState.combo = 1; bugState.time = 30;
+        var cfg = levelConfig[bugState.level];
+        bugState.score = 0; bugState.combo = 1; bugState.time = cfg.time;
         clearAll();
         updateBugUI();
         bugStart.disabled = false;
-        bugFb.textContent = 'กด Start เพื่อเริ่มเกม';
+        for (var i = 0; i < bugLevelBtns.length; i++) bugLevelBtns[i].disabled = false;
+        bugFb.textContent = 'เลือกระดับแล้วกด Start';
         bugFb.className = 'game-feedback';
+      }
+
+      // Level button handlers
+      for (var li = 0; li < bugLevelBtns.length; li++) {
+        (function(btn) {
+          btn.addEventListener('click', function() {
+            if (!bugState.running) setLevel(btn.dataset.level);
+          });
+        })(bugLevelBtns[li]);
       }
 
       bugStart.addEventListener('click', startGame);
       bugReset.addEventListener('click', resetGame);
+
+      // Initial build
+      buildGrid('easy');
+      updateBugUI();
     }
   } catch (e) {
     // Silent fail — flip cards still work via native <details>
